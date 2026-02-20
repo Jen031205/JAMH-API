@@ -7,14 +7,14 @@ export class TaskController {
     constructor(private readonly taskSvc: TaskService) { }
 
     @Get()
-    public getTask(): any {
-        return this.taskSvc.getTask();
+    public async getTask(): Promise<any> {
+        return await this.taskSvc.getTask();
     }
 
     @Get(":id")
-    public getTasksById(@Param("id", ParseIntPipe) id: number): any {
+    public async getTasksById(@Param("id", ParseIntPipe) id: number): Promise<any> {
         console.log(typeof id);
-        return this.taskSvc.getTaskById(id);
+        return await this.taskSvc.getTaskById(id);
     }
 
     @Post()
