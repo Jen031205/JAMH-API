@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ConnectConfig } from 'rxjs';
 import { CreateTaskDto } from 'src/modules/auth/dto/create-task.dto';
+import { updateTaskDto } from 'src/modules/auth/dto/update-task.dto';
 
 @Injectable()
 export class TaskService {
@@ -19,33 +20,27 @@ export class TaskService {
     }
 
     public async getTaskById(id: number): Promise<any> {
-
-
-
+        const query = "SELECT * FROM task WHERE id='${ id }'";
+        const [result] = await this.db.query(query)
+        return [0]
     }
 
-    public insert(task: CreateTaskDto): string {
-        var id = this.task.length + 1;
-        var insertedTask = this.task.push({
-            ...task,
-            id: id
-        });
+    public async insert(tasks: CreateTaskDto): Promise<any> {
+        const sql = "INSERT INTO tasks (name, description, priority, user_id)VALUES (${task.name}, ${task.description}, ${task.priority}, ${task.users_id} )"
+        const [result] = await this.db.query(sql);
+        const insertId = result.insertId;
 
-
-        return this.task[insertedTask - 1];
+        const row = await this.getTaskById(insertId);
+        return row;
     }
 
-    public update(id: number, task: any): any {
-        const taskUpdated = this.task.map(t => {
-            if (t.id == id) {
-                if (task.name) t.name = task.name;
-                if (task.description) t.description = task.description;
-                if (task.priority) t.priority = task.priority;
-            }
-            return t;
-        });
-        return taskUpdated;
+    public async update(id: number, taskUpdate: updateTaskDto): Promise<any> {
+        const task = await this.getTaskById(id);
+        task.name = taskUpdate.name ? taskUpdate.name : task.name;
+        task.description = task.Update.description ?? task.description;
+        task.priority = task.Update.priority ?? task.priority;
     }
+
     public delete(id: number): string {
         const array = this.task.filter(t => t.id != id);
         this.task = array;
