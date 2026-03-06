@@ -1,10 +1,12 @@
 import { Body, Controller, Delete, Get, HttpException, Param, ParseIntPipe, Post, Put } from '@nestjs/common';
 import { TaskService } from './task.service';
-import { NotFoundError } from 'rxjs';
 import { HttpStatus } from '@nestjs/common';
 import { CreateTaskDto } from 'src/modules/auth/dto/create-task.dto';
 import { UpdateTaskDto } from 'src/modules/auth/dto/update-task.dto';
 import { Task } from 'src/modules/auth/entities/task.entity';
+import { ApiTags } from '@nestjs/swagger';
+
+@ApiTags('Tareas')
 
 @Controller('api/task')
 export class TaskController {
@@ -41,11 +43,12 @@ export class TaskController {
     }
 
     @Delete(":id")
-    public async deleteTask(@Param("id", ParseIntPipe) id: number) : Promise<boolean> {
-const result = await this.taskSvc.delete(id);
-
-if (!result)
-    throw new HttpException("No se puede eliminar la tarea", HttpStatus.NOT_FOUND);
-        return result;
+    public async deleteTask(@Param("id", ParseIntPipe) id: number): Promise<boolean> {
+        try {
+            await this.taskSvc.delete(id);
+        } catch (error) {
+            throw new HttpException("Tarea no encontrada", HttpStatus.NOT_FOUND);
+        }
+        return true;
     }
 }
