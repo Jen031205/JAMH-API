@@ -26,7 +26,8 @@ model User {
   name  String @db.VarChar(200)
   lastName String @db.VarChar(250)
   userName String @db.VarChar(100)
-  password String 
+  password String
+  hash String  
   created_at DateTime @default(now())
   role_id Int?
   rol Rol? @relation(fields: [role_id], references: [id])
