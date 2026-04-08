@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
-import { Task } from './modules/auth/entities/task.entity';
 import { TaskModule } from './task/task.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
     AuthModule,
-    TaskModule
+    TaskModule,
+    UserModule
   ],
 })
 export class AppModule { }

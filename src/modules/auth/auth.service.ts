@@ -1,13 +1,16 @@
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from 'src/prisma.service';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class AuthService {
+  constructor(private prisma: PrismaService) { }
+
   login(): string {
     return 'Authenticated';
   }
 
-  //Nuevo
-  public async getUserById(id: number) {
+  public async getUserById(id: number): Promise<User | null> {
     return await this.prisma.user.findFirst({
       where: { id }
     });

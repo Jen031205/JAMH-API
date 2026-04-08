@@ -1,54 +1,59 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { ConnectConfig } from 'rxjs';
-import { CreateTaskDto } from 'src/modules/auth/dto/create-task.dto';
-import { UpdateTaskDto } from 'src/modules/auth/dto/update-task.dto';
-import { Task } from 'src/modules/auth/entities/task.entity';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { CreateTaskDto } from './dto/create-task.dto';
+import { Task } from './entities/task.entity';
+import { UpdateTaskDto } from './dto/update-task.dto';
 import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
 export class TaskService {
+    constructor(private prisma: PrismaService) { }
 
-    constructor(
-        @Inject('MYSQL_CONNECTION') private db: any,
-        private prisma: PrismaService
-    ) { }
+    public async getTasks(userId: number): Promise<Task[]> {
+        const tasks = await this.prisma.task.findMany({
+            where: { user_id: userId }
+        });
 
-    private task: any[] = [];
-
-    public async getTask(): Promise<Task[]> {
-        const tasks = await this.prisma.task.findMany();
         return tasks;
     }
 
-    public async getTaskById(id: number): Promise<Task> {
-        const task = await this.prisma.task.findUnique({
-            where: {
-                id
-            }
+    async getTaskById(id: number, userId: number): Promise<Task | null> {
+        const task = await this.prisma.task.findFirst({
+            where: { id, user_id: userId }
         });
+
         return task;
     }
 
-    public async insert(tasks: CreateTaskDto): Promise<Task> {
-        const task = await this.prisma.task.create({
-            data: tasks
+    async insert(task: CreateTaskDto): Promise<Task> {
+
+        return await this.prisma.task.create({
+            data: task,
         });
-        return task;
     }
 
-    public async update(id: number, taskUpdate: UpdateTaskDto): Promise<Task> {
-        const tasks = await this.prisma.task.update({
+    async update(id: number, userId: number, taskUpdate: UpdateTaskDto): Promise<Task> {
+        const existing = await this.getTaskById(id, userId);
+        if (!existing) {
+            throw new NotFoundException('Task not found or unauthorized');
+        }
+
+        const task = await this.prisma.task.update({
             where: { id },
             data: taskUpdate
         });
-        return tasks;
-    }
 
-    public async delete(id: number): Promise<Task> {
+        return task;
+    }
+    async delete(id: number, userId: number): Promise<Task> {
+        const existing = await this.getTaskById(id, userId);
+        if (!existing) {
+            throw new NotFoundException('Task not found or unauthorized');
+        }
+
         const task = await this.prisma.task.delete({
             where: { id }
-        });
-        return task;
+        })
 
+        return task
     }
 }
